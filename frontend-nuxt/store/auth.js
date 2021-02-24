@@ -20,7 +20,7 @@ export const mutations = {
 // actions hanyalah function yg mentrigger mutations
 // dipanggil dengan cara dispatch
 export const actions = {
-  async setToken({ commit }, { token, expiresIn }) {
+  async setToken({ commit }, { token, expiresIn, role = 'u' }) {
     this.$axios.setToken(token, 'Bearer')
     const expiryTime = new Date(new Date().getTime() + expiresIn * 1000)
     cookies.set('x-access-token', token, { expires: expiryTime })
