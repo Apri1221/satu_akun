@@ -38,6 +38,7 @@ class UserController extends Controller
      */
     public function allUsers()
     {
+        $this->middleware('auth');
         return response()->json(['users' => User::all()], 200);
     }
 

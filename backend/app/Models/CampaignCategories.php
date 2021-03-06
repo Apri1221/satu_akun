@@ -14,14 +14,16 @@ class CampaignCategories extends Model
      */
     protected $fillable = [
         'categories',
+        'updated_by',
+        'created_by',
     ];
 
     /**
      * relation
      */
-    // public function campaign()
-    // {
-    //     return $this->belongsTo(Campaign::class);
-    // }
+    public function campaigns()
+    {
+        return $this->belongsTo(Campaign::class);
+    }
 
 }

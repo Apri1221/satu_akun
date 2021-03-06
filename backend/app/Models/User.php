@@ -23,7 +23,7 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'whatsapp', 'otp', 'status', 'role'
+        'name', 'email', 'whatsapp', 'otp', 'status', 'role', 'updated_by', 'created_by',
     ];
 
     /**
@@ -33,9 +33,9 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
      */
     protected $hidden = [
         'password',
+        // 'id',
     ];
-
-
+    
 
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
@@ -61,7 +61,23 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
     /**
      * relation
      */
-    public function social_media() {
+    public function social_media() 
+    {
         return $this->hasMany(SocialMedia::class);
+    }
+
+    public function transactions() 
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function campaign_members()
+    {
+        return $this->hasMany(CampaignMember::class);
+    }
+
+    public function campaign_reports()
+    {
+        return $this->hasMany(CampaignReport::class);
     }
 }

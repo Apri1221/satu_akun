@@ -45,17 +45,35 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
 
     // Campaign
     $router->group(['prefix' => 'campaign'], function () use ($router) {
-        // $router->get('store', 'CampaignController@allCategories');
-
 
         // Categories
         $router->group(['prefix' => 'categories'], function () use ($router) {
             $router->get('/', 'CampaignController@allCategories');
             $router->post('store', 'CampaignController@storeCategories');
         });
+
+        /**
+         * kelompok kelompok campaign harus di defenisikan sebelum rootnya
+         * Static route "/api/v1/campaign/categories" is shadowed by previously defined variable
+         */
+        $router->get('/', 'CampaignController@allCampaigns');
+        $router->get('/{id_campaign}[/{slug}]', 'CampaignController@campaign');
+        $router->post('store', 'CampaignController@createCampaign');
+        $router->post('update/{id_campaign}', 'CampaignController@updateCampaign');
+
+        $router->get('rsvp/{id_campaign}/{id_user}', 'CampaignController@assignMemberToCampaign');
     });
 
+
+    // Transaction
+    $router->group(['prefix' => 'transaction'], function () use ($router) {
+        $router->get('/', 'TransactionController@allTransactions');
+        $router->get('user/{id_user}', 'TransactionController@userTransaction');
+        $router->get('campaign/{id_campaign}', 'TransactionController@campaignTransaction');
+        $router->get('user/{id_user}/campaign/{id_campaign}', 'TransactionController@userTransactionByCampaign');
+    });
     
+
     $router->get('profile', 'UserController@profile');
     $router->get('users', 'UserController@allUsers');
 
@@ -63,3 +81,4 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
 });
 
 // php -S localhost:8000 -t public
+// sudah bisa php artisan serve

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CampaignDashboard />
+    <CampaignDashboard :user_role="user_role" />
     <!-- Content ini bakal ada untuk semua tipe pengguna, in atau out -->
     <!-- Kalau in, kita yg bayar ke host, kalau out mereka yang bayar ke kita -->
     <div class="container mx-auto flex items-center mt-6">
@@ -38,8 +38,14 @@ export default {
   // pasang ini jika ingin tidak bisa diakses kalau belum login
   components: { CampaignDashboard },
   layout: 'default',
+  member_campaign: 6,
   data() {
-    return {}
+    return {
+      user_role: 'u',
+    }
+  },
+  mounted() {
+    this.user_role = this.$store.state.user.role
   },
 }
 </script>
