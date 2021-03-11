@@ -9,7 +9,6 @@ use App\Models\CampaignCategories;
 use App\Models\CampaignMember;
 use App\Models\Transaction;
 use App\Models\User;
-use Carbon\Carbon;
 use DateTime;
 
 class CampaignController extends Controller
@@ -25,12 +24,23 @@ class CampaignController extends Controller
         return response()->json(['campaigns' => Campaign::with(['categories'])->withCount('campaign_members as total_members')->get()], 200);
     }
 
+    /**
+     * disini nanti bakal ada pengaturan pengaturan
+     * apakah perlu di filter yg bukan kedaluwarsa (dashboard / non dashboard)
+     *      - ketika dashboard = false, maka filter nya yang aktif dan tidak kedaluwarsa
+     * apakah di filter berdasarkan kategori
+     *      - filter berdasarkan kategori
+     * apakah perlu di filter berdasarkan status
+     *      - filter berdasarkan status, 0 = aktif, 1 = berlangsung, 2 = expired, 3 = refund, 4 = selesai refund, 5 = selesai
+     */
     public function campaign($id_campaign, $slug = null) {
         $campaign = Campaign::with(['campaign_members.users', 'categories'])->withCount('campaign_members as total_members')->findOrFail($id_campaign);
         return response()->json(['campaigns' => $campaign], 200);
     }
 
-
+    public function campaignByUser($id_user) {
+        
+    }
 
     /**
      * data ini akan berada di fill input
@@ -41,7 +51,7 @@ class CampaignController extends Controller
      * 'expired_date',
      * 'duration_date',
      * 'durasi',
-     * 'status',
+     * 'status' (nullable) -> default 0,
      * 'slot_capacity',
      * 'slot_price',
      * 'media_url', (nullable)
@@ -51,13 +61,27 @@ class CampaignController extends Controller
      */
         
 
-    public function createCampaign(Request $request) {
+    public function createCampaign(Request $request, $id_user = null) {
         $this->middleware('auth');
+        // validate incoming request 
+        $this->validate($request, [
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'slot_capacity' => 'required',
+            'slot_price' => 'required',
+            'expired_date' => 'required',
+            'duration_date' => 'required',
+        ]);
+
         try {
             $campaign = new Campaign();
             $campaign->fill($request->all());
             $campaign->save();
             // return successful response
+            if ($id_user !== null) {
+                $this->assignMemberToCampaign($campaign->id, $id_user, true);
+            }
+
             return response()->json(['campaign' => $campaign, 'message' => 'CREATED'], 201);
         } catch (\Exception $e) {
             // return error message
@@ -103,7 +127,7 @@ class CampaignController extends Controller
      * 'created_by', (nullable)
      */
 
-    public function assignMemberToCampaign($id_campaign, $id_user)
+    public function assignMemberToCampaign($id_campaign, $id_user, $is_host = false)
     {
         $this->middleware('auth');
         // aktifkan ini jika masa production
@@ -123,8 +147,11 @@ class CampaignController extends Controller
             $member_of_campaign->fill([
                 'user_id' => $id_user,
                 'campaign_id' => $id_campaign,
+                'is_host'=> $is_host
             ]);
             $member_of_campaign->save();
+            
+            if ($is_host === true) return;
             $this->generateNewTransaction($campaign, $user);
 
             return response()->json(['campaign' => $member_of_campaign, 'message' => 'CREATED'], 201);
@@ -152,76 +179,60 @@ class CampaignController extends Controller
      */
     private function generateNewTransaction($campaign, $user, $bank = 'OVO')
     {
-        $transaction = new Transaction();
-        $price_after_fee = $this->getCalculatedPrice($campaign->slot_price);
+        $price_after_fee = getCalculatedPrice($campaign->slot_price);
         $random_code = mt_rand(10,999); // gunakan round aja kalau sistem ga support
         $final_price = $price_after_fee + $random_code;
 
         $date = new DateTime();
-
-        // bank ini di kita nya
-        $transaction->fill([
-            'campaign_id' => $campaign->id, 
-            'user_id' => $user->id,
-            'bank' => $bank,
-            'no_transaction' => $date->getTimestamp(),
-            'type' => 1,
-            'nominal' => $price_after_fee,
-            'unique_code' => $random_code,
-            'total_nominal' => $final_price,
-        ])->save();
         
         try {
+            $transaction = new Transaction();
+            // bank ini di kita nya
+            $transaction->fill([
+                'campaign_id' => $campaign->id, 
+                'user_id' => $user->id,
+                'bank' => $bank,
+                'no_transaction' => $date->getTimestamp(),
+                'type' => 1,
+                'nominal' => $price_after_fee,
+                'unique_code' => $random_code,
+                'total_nominal' => $final_price,
+            ])->save();
             $url = "wa.me/628976634788?text=" . $user->id . '/' . $transaction->id . '/no_transaksi=' . $transaction->no_transaction;
             $data = [
                 'name' => $user->name,
                 'desc' => $campaign->title,
                 'no_transaction' => $transaction->no_transaction,
-                'total' => $this->formatRupiah($final_price),
-                'created_at' => $this->convertDateTime($transaction->created_at),
+                'total' => formatRupiah($final_price),
+                'created_at' => convertDateTime($transaction->created_at),
                 'url' => $url,
             ];
             $type = 'transaction';
             $emailJob = (new MailJob($user, $data, $type));
             // masuk ke queue biar gak bloking
             dispatch($emailJob);
-        } catch (\Exception $th) {
-            
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e], 409);
         }
         
     }
 
+    // ---------------------------------- Campaign Member
 
-    private function getCalculatedPrice($price): float {
-        $percentageFee = 0.2; // 20%
-        $topFee = 4800;
-        $bottomFee = 2000;
-        
-        switch ($price) {
-            case $price >= 80000 && $price < 500000:
-                $percentageFee = 0.06;
-                $topFee = 6500;
-                $bottomFee = 4800;
-                break;
-            case $price >= 500000:
-                $percentageFee = 0.013;
-                $topFee = 9000;
-                $bottomFee = 6500;
-                break;
-            default:
-                # code...
-                break;
+    public function getMemberOnCampaign($id_campaign, $id_user = null) {
+        $this->middleware('auth');
+        $condition = ['campaign_id' => $id_campaign];
+        if ($id_user !== null) {
+            $condition = array_merge($condition, ['user_id' => $id_user]);
+        } 
+        try {
+            $campaign_members = CampaignMember::where($condition)->get();
+            return response()->json(['campaign_members' => $campaign_members, 'message' => 'SUCCESS'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e], 409);
         }
-
-        if ($percentageFee * $price < $bottomFee) {
-            return $price + $bottomFee;
-        }
-        
-        if ($percentageFee * $price > $bottomFee) {
-            return $price + $topFee;
-        }
-        return $price + ($percentageFee * $price);
     }
+
 
     // ---------------------------------- Categories
 

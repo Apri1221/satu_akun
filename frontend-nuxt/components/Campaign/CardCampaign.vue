@@ -2,7 +2,7 @@
   <div
     class="flex flex-col justify-between rounded-lg shadow-md bg-white hover:shadow-xl transition duration-150 ease-in-out my-1 xl:mx-1"
   >
-    <NuxtLink exact to="/campaign/1">
+    <NuxtLink exact :to="`/campaign/${campaign.id}/${campaign.slug}`">
       <div class="col-span-4 relative">
         <img
           src="https://picsum.photos/640/400/?random"
@@ -14,7 +14,8 @@
           class="bg-indigo-500 absolute bottom-0 right-0 p-3 rounded-tl-md xs:py-1"
         >
           <p class="font-bold text-white text-md sm:text-sm xs:text-xs">
-            {{ price | formatRupiah }}<span class="font-normal">/orang</span>
+            {{ campaign.slot_price | formatRupiah
+            }}<span class="font-normal">/orang</span>
           </p>
         </div>
       </div>
@@ -26,19 +27,20 @@
             class="flex items-center justify-between leading-tight max-h-0.5"
           >
             <h1 class="text-xl xs:text-base font-medium line-clampin">
-              {{ title }}
+              {{ campaign.title }}
             </h1>
           </header>
         </div>
 
         <div class="col-span-3 row-span-1 truncate">
           <a class="text-sm" href="#">
-            <span class="font-medium text-indigo-500">Bagus Purnama Putra</span>
+            <span class="font-medium text-indigo-500">{{
+              campaign.host_name
+            }}</span>
           </a>
         </div>
 
         <div class="col-span-3 row-span-1 pt-1 pb-0">
-          <!-- <h1 class="text-sm px-2">Lama Campaign: <span>1 Bulan</span></h1> -->
           <div class="inline-flex">
             <svg
               class="h-5 w-5"
@@ -53,7 +55,7 @@
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p class="ml-1 text-sm">1 Bulan</p>
+            <p class="ml-1 text-sm">{{ campaign.durasi }}</p>
           </div>
         </div>
 
@@ -66,18 +68,27 @@
               </div>
 
               <div class="col-end-7 col-span-2">
-                <span class="text-sm text-gray-700"> 3/6 </span>
+                <span class="text-sm text-gray-700">
+                  {{
+                    campaign.total_members - 1 + '/' + campaign.slot_capacity
+                  }}</span
+                >
               </div>
             </div>
           </div>
 
           <div class="pb-2 pt-1 w-full">
             <div
-              class="bg-gray-300 h-4 p-1 w-full rounded-full items-center justify-center relative"
+              class="bg-green-200 h-4 p-1 w-full rounded-full items-center justify-center relative"
             >
               <span
                 class="bg-indigo-500 h-2 absolute rounded-full"
-                style="width: 66%"
+                :style="
+                  'width:' +
+                  ((campaign.total_members - 1) / campaign.slot_capacity) *
+                    100 +
+                  '%'
+                "
               ></span>
             </div>
           </div>
@@ -87,7 +98,9 @@
               class="grid grid-cols-3 gap-4 items-center justify-between leading-tight"
             >
               <div class="col-end-7 col-span-2">
-                <span class="text-red-700 text-sm">3 hari lagi </span>
+                <span class="text-red-700 text-sm"
+                  >{{ campaign.expired_date | remainingTime }} lagi</span
+                >
               </div>
             </div>
           </div>
@@ -99,7 +112,7 @@
 <script>
 export default {
   name: 'CardCampaign',
-  props: ['title'],
+  props: ['title', 'campaign'],
   data() {
     return {
       price: '53000',
