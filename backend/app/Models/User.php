@@ -9,12 +9,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
 
+use App\Observers\UserObserver;
+
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Model implements JWTSubject, AuthenticatableContract, AuthorizableContract
 {
-    use Authenticatable, Authorizable, HasFactory;
+    use Authenticatable, Authorizable, HasFactory, UserObserver;
 
     protected $table = 'users';
     /**
@@ -23,8 +25,10 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'otp', 'status'
+        'name', 'email', 'whatsapp', 'otp', 'status', 'role', 'updated_by', 'created_by',
     ];
+
+    // status 0 (belum validasi), 1 (aktif), 2 (banned),
 
     /**
      * The attributes excluded from the model's JSON form.
@@ -33,9 +37,9 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
      */
     protected $hidden = [
         'password',
+        // 'id',
     ];
-
-
+    
 
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
@@ -61,7 +65,23 @@ class User extends Model implements JWTSubject, AuthenticatableContract, Authori
     /**
      * relation
      */
-    public function social_media() {
+    public function social_media() 
+    {
         return $this->hasMany(SocialMedia::class);
+    }
+
+    public function transactions() 
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function campaign_members()
+    {
+        return $this->hasMany(CampaignMember::class);
+    }
+
+    public function campaign_reports()
+    {
+        return $this->hasMany(CampaignReport::class);
     }
 }

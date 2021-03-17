@@ -1,29 +1,57 @@
 <template>
   <div>
     <div
+      class="min-w-screen min-h-screen flex -mt-20 justify-between items-center"
+      v-if="campaign.title === undefined"
+    >
+      <svg
+        class="animate-spin mx-auto place-items-center h-20 w-20 text-indigo-400 self-center"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+    </div>
+
+    <div
       class="container px-4 mx-auto flex flex-wrap items-center justify-between"
+      v-else
     >
       <div
         class="z-0 relative grid grid-cols-1 col-span-2 w-full sm:grid-cols-2 sm:px-5 sm:py-5 sm:gap-x-8 md:py-5"
       >
         <div
-          class="z-10 col-start-2 row-start-1 px-4 sm:pt-5 pt-40 bg-gradient-to-t from-black sm:bg-none"
+          class="z-10 col-start-2 xs:col-start-1 row-start-1 px-4 sm:pt-5 pt-40 bg-gradient-to-t from-black sm:bg-none"
         >
           <h2
-            class="text-xl font-semibold text-white sm:text-2xl leading-tight sm:text-black md:text-3xl my-5"
+            class="text-xl font-semibold text-white sm:text-2xl leading-tight sm:text-black md:text-3xl my-5 xs:max-w-xs"
           >
-            Patungan Beli Akun Dicoding selama 1 tahun bebas kelas apa saja yang
-            ada, yuk murah meriah
+            {{ campaign.title }}
           </h2>
         </div>
 
-        <div class="col-start-2 row-start-3 space-y-3 px-4 xs:py-4">
+        <div
+          class="col-start-2 xs:col-start-1 row-start-3 space-y-3 px-4 xs:py-4"
+        >
           <div
             class="flex items-center text-black text-md xs:text-sm font-normal"
           >
             <p class="font-bold text-2xl">
-              {{ formatRupiah(price, 'Rp. ')
-              }}<span class="font-normal">/orang</span>
+              {{ campaign.slot_price | formatRupiah }}
+              <span class="font-normal">/orang</span>
             </p>
           </div>
           <div class="flex-1 inline-flex items-center mt-1">
@@ -41,12 +69,16 @@
               />
             </svg>
             <p class="text-md sm:text-sm ml-1">
-              <span class="text-gray-900 font-medium">1</span> Tahun
+              <span class="text-gray-900 font-medium">{{
+                campaign.durasi
+              }}</span>
             </p>
           </div>
-          <p class="text-sm">
+          <p class="text-md xs:text-sm">
             Berakhir
-            <span class="font-bold text-red-700">10 Februari 2021</span>
+            <span class="text-md xs:text-sm font-bold text-red-700">{{
+              campaign.expired_date | formatDate
+            }}</span>
           </p>
           <p
             class="flex items-center text-black text-md xs:text-sm font-normal"
@@ -56,19 +88,24 @@
               class="text-md xs:text-sm px-1 font-medium text-indigo-500"
               href="#"
             >
-              Bagus Purnama Putra
+              {{ campaign.host_name }}
             </a>
           </p>
 
-          <icon-social></icon-social>
+          <icon-social class="lg:mt-6"></icon-social>
         </div>
         <div
           class="col-start-1 col-span-2 row-start-1 flex sm:col-span-1 sm:col-start-1 sm:row-span-3"
         >
           <div class="w-full grid">
             <div class="relative col-span-1 row-span-1 md:col-span-2">
+              <!-- src="https://picsum.photos/640/400/?random" -->
               <img
-                src="https://picsum.photos/640/400/?random"
+                :src="
+                  campaign.media_url !== ``
+                    ? campaign.media_url
+                    : require(`~/assets/img/default-img.jpeg`)
+                "
                 alt="..."
                 class="absolute inset-0 w-full h-full object-cover bg-gray-100 rounded-lg z-0"
               />
@@ -89,40 +126,33 @@
           >
             Deskripsi
           </h1>
-          <!-- <div class="w-full ">
-          <span>Lama kampanye akun: 1 bulan</span>
-        </div>
-        <div class="w-full">
-          <span>Harga yang harus dibayarkan: 53 ribu</span>
-        </div> -->
-          <p
-            class="my-3 text-justify"
-            v-bind:class="[detail ? 'line-clampin' : '']"
-          >
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book. It has survived not
-            only five centuries, but also the leap into electronic typesetting,
-            remaining essentially unchanged. It was popularised in the 1960s
-            with the release of Letraset sheets containing Lorem Ipsum passages,
-            and more recently with desktop publishing software like Aldus
-            PageMaker including versions of Lorem Ipsum.
-          </p>
-          <button
-            v-if="detail === true"
-            class="border-none bg-none cursor-pointer hover:underline text-indigo-500 focus:outline-none"
-            @click="showDetail()"
-          >
-            Lihat selengkapnya
-          </button>
-          <button
-            v-else
-            class="border-none bg-none cursor-pointer hover:underline text-indigo-500 focus:outline-none"
-            @click="showDetail()"
-          >
-            Lihat lebih ringkas
-          </button>
+          <div v-if="`${campaign.description}`.length > 100">
+            <p
+              class="my-3 text-justify whitespace-pre-line"
+              v-bind:class="[hiddenDetail ? 'line-clampin' : '']"
+            >
+              {{ campaign.description }}
+            </p>
+            <button
+              v-if="hiddenDetail"
+              class="border-none bg-none cursor-pointer hover:underline text-indigo-500 focus:outline-none"
+              @click="showDetail()"
+            >
+              Lihat selengkapnya
+            </button>
+            <button
+              v-else
+              class="border-none bg-none cursor-pointer hover:underline text-indigo-500 focus:outline-none"
+              @click="showDetail()"
+            >
+              Lihat lebih ringkas
+            </button>
+          </div>
+          <div v-else>
+            <p class="my-3 text-justify whitespace-pre-line">
+              {{ campaign.description }}
+            </p>
+          </div>
         </div>
       </div>
       <div
@@ -140,61 +170,173 @@
           <div
             class="sm:grid lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 sm:gap-3 my-3"
           >
-            <!-- Bakal di looping dari props data dari backend, siapa yg tergabung saat ini, ada pengecekan sudah beneran aktif atau tidak -->
             <div
-              class="flex justify-start cursor-pointer text-gray-700 lg:bg-gray-100 bg-indigo-100 hover:bg-indigo-100 rounded-md px-2 py-2 xs:mb-2"
+              class="flex justify-start cursor-pointer text-gray-700 lg:bg-gray-100 bg-indigo-100 hover:bg-indigo-100 rounded-md px-2 py-2 xs:mb-2 items-center"
+              v-for="member in campaign.campaign_members"
+              :key="member.id"
             >
-              <span class="bg-green-400 h-2 w-2 m-2 rounded-full"></span>
-              <div class="font-medium px-2 truncate">Bagus Alexander</div>
+              <span
+                v-if="member.is_pay === 0"
+                class="bg-gray-500 h-3 w-3 m-2 rounded-full"
+              ></span>
+              <span
+                v-else
+                class="bg-yellow-400 h-3 w-3 m-2 rounded-full"
+              ></span>
+
+              <div class="font-medium px-2 truncate">
+                {{ member.users.name }}
+              </div>
             </div>
-            <div
-              class="flex justify-start cursor-pointer text-gray-700 lg:bg-gray-100 bg-indigo-100 hover:bg-indigo-100 rounded-md px-2 py-2 xs:mb-2"
-            >
-              <span class="bg-green-400 h-2 w-2 m-2 rounded-full"></span>
-              <div class="font-medium px-2 truncate">Jesse Purnama</div>
-            </div>
+
             <!-- ingat ada gray nih, bisa styling class based on data active or pending -->
-            <div
-              class="flex justify-start cursor-pointer text-gray-700 lg:bg-gray-100 bg-indigo-100 hover:bg-indigo-100 rounded-md px-2 py-2 xs:mb-2"
-            >
-              <span class="bg-gray-400 h-2 w-2 m-2 rounded-full"></span>
-              <div class="font-medium px-2 truncate">Anastasya Eka</div>
-            </div>
+
             <div
               class="flex justify-start cursor-pointer text-gray-700 bg-green-200 rounded-md px-2 py-2 xs:mb-2"
+              v-for="index in campaign.slot_capacity -
+              (campaign.total_members - 1)"
+              :key="index"
             >
-              <!-- kalau ada slot kosong nanti maka penambahan kelas hidden di span berikut, dan kelas di atasnya ada penambahan kelas background nya hijau, hovernya di hapus -->
-              <!-- bisa diimplementasiin styling class seleksi kondisi -->
-              <!-- <span class="bg-green-400 h-2 w-2 m-2 rounded-full"></span> -->
-              <div class="px-2 font-bold">Slot Kosong</div>
-            </div>
-            <div
-              class="flex justify-start cursor-pointer text-gray-700 bg-green-200 rounded-md px-2 py-2 xs:mb-2"
-            >
-              <!-- <span class="bg-green-400 h-2 w-2 m-2 rounded-full"></span> -->
               <div class="px-2 font-bold">Slot Kosong</div>
             </div>
           </div>
         </div>
         <div class="text-center my-5 md:my-10 xs:hidden">
-          <a
+          <button
+            v-if="!registered || isDisable || !this.$store.state.auth.token"
             class="w-1/3 xs:w-full py-2 rounded text-white inline-block shadow-md bg-indigo-500 hover:bg-indigo-600 focus:bg-indigo-700"
-            href="/campaign/1/checkout"
+            v-bind:class="[!isLogin || isDisable ? 'opacity-50 ' : '']"
+            @click.prevent="rsvpCheckout(campaign.id)"
+            :disabled="isDisable"
           >
-            Daftar
-          </a>
+            <span class="inline-flex items-center p-0 m-0">
+              <svg
+                v-if="loading"
+                class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+
+              Daftar</span
+            >
+          </button>
+          <button
+            v-else-if="registered && !isDisable && this.$store.state.auth.token"
+            class="w-1/3 xs:w-full py-2 rounded text-white inline-block shadow-md bg-orange-400 hover:bg-orange-600 focus:bg-orange-700"
+            v-bind:class="[!isLogin || isDisable ? 'opacity-50 ' : '']"
+            @click.prevent="rsvpCheckout(campaign.id)"
+            :disabled="isDisable"
+          >
+            <span class="inline-flex items-center p-0 m-0">
+              <svg
+                v-if="loading"
+                class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Menunggu Pembayaran</span
+            >
+          </button>
         </div>
       </div>
     </div>
     <div
       class="container px-4 mx-auto flex flex-wrap items-center justify-between bg-white w-full text-center pt-5 sm:hidden sticky bottom-0 min-w-screen"
     >
-      <a
+      <button
+        v-if="!registered || isDisable || !this.$store.state.auth.token"
         class="w-1/3 xs:w-full mb-4 mt-7 py-2 rounded text-white inline-block shadow-md bg-indigo-500 hover:bg-indigo-600 focus:bg-indigo-700"
-        href="/campaign/1/checkout"
+        @click.prevent="rsvpCheckout(campaign.id)"
+        v-bind:class="[!isLogin || isDisable ? 'opacity-50 ' : '']"
+        :disabled="isDisable"
       >
-        Daftar
-      </a>
+        <span class="inline-flex items-center p-0 m-0">
+          <svg
+            v-if="loading"
+            class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          Daftar</span
+        >
+      </button>
+      <button
+        v-else-if="registered && !isDisable && this.$store.state.auth.token"
+        class="w-1/3 xs:w-full mb-4 mt-7 py-2 rounded text-white inline-block shadow-md bg-orange-500 hover:bg-orange-600 focus:bg-orange-700"
+        @click.prevent="rsvpCheckout(campaign.id)"
+        v-bind:class="[!isLogin || isDisable ? 'opacity-50 ' : '']"
+        :disabled="isDisable"
+      >
+        <span class="inline-flex items-center p-0 m-0">
+          <svg
+            v-if="loading"
+            class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          Menunggu Pembayaran</span
+        >
+      </button>
     </div>
   </div>
 </template>
@@ -204,32 +346,60 @@ import IconSocial from '../Profil/IconSocial'
 export default {
   components: { IconSocial },
   name: 'DetailCampaign',
+  props: ['campaign', 'registered'],
   data() {
     return {
-      detail: true,
-      price: '53000',
+      hiddenDetail: true,
+      loading: false,
     }
   },
   methods: {
     showDetail() {
-      this.detail = !this.detail
+      this.hiddenDetail = !this.hiddenDetail
     },
-    formatRupiah(angka, prefix) {
-      var number_string = String(angka)
-          .replace(/[^,\d]/g, '')
-          .toString(),
-        split = number_string.split(','),
-        sisa = split[0].length % 3,
-        rupiah = split[0].substr(0, sisa),
-        ribuan = split[0].substr(sisa).match(/\d{3}/gi)
+    rsvpCheckout(idCampaign) {
+      if (this.isLogin) {
+        if (this.registered) {
+          this.$router.push(
+            `/campaign/${idCampaign}/checkout/${this.$store.state.user.id}`
+          )
+        } else {
+          this.loading = true
 
-      if (ribuan) {
-        let separator = sisa ? '.' : ''
-        rupiah += separator + ribuan.join('.')
+          this.$axios
+            .$get(
+              process.env.API_DEV_URL +
+                `campaign/rsvp/${idCampaign}/${this.$store.state.user.id}/`
+            )
+            .then((resp) => {
+              this.$router.push(
+                `/campaign/${idCampaign}/checkout/${this.$store.state.user.id}`
+              )
+            })
+            .catch((errors) => {
+              console.dir(errors)
+            })
+        }
+      } else {
+        this.$router.push('/account/login')
       }
+    },
+  },
+  computed: {
+    isLogin() {
+      return this.$store.state.auth.token
+    },
 
-      rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah
-      return prefix === undefined ? rupiah : rupiah ? 'Rp. ' + rupiah : ''
+    isDisable() {
+      if (this.$store.state.auth.token) {
+        return (
+          this.campaign.id_host === this.$store.state.user.id ||
+          this.$store.state.user.role === 'a'
+          // this.statusDisable
+        )
+      } else {
+        return false
+      }
     },
   },
 }
@@ -240,7 +410,8 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
+  white-space: normal;
 }
 </style>

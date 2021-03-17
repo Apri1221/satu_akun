@@ -1,19 +1,36 @@
 <template>
-  <div
-    class="relative container px-4 mx-auto"
-    v-click-outside
-    @clicked-outside="showDetail()"
-  >
+  <div class="relative container px-4 mx-auto">
     <div class="relative w-full">
       <h3 class="font-bold pb-3 text-4xl xs:text-2xl text-indigo-500">
         Daftar Campaign
       </h3>
 
       <div class="relative overflow-auto pb-20">
+        <div v-if="campaigns === null" class="min-h-screen">
+          <svg
+            class="animate-spin mx-auto place-items-center h-20 w-20 text-indigo-400 self-center"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        </div>
         <table
+          v-else
           class="relative table-auto w-full text-left whitespace-no-wrap"
-          v-click-outside
-          @clicked-outside="showDetail()"
         >
           <thead>
             <tr>
@@ -45,14 +62,10 @@
             </tr>
           </thead>
           <!-- Bingung gimana caranya click-outsidenya berjalan maksimal -->
-          <tbody
-            class="bg-white relative text-sm"
-            v-click-outside
-            @clicked-outside="showDetail()"
-          >
+          <tbody class="bg-white relative text-sm">
             <tr
-              v-for="(patungan, index) in dataPatungan"
-              :key="patungan.title"
+              v-for="(campaign, index) in campaigns"
+              :key="campaign.id"
               class="hover:bg-gray-100 relative"
             >
               <td
@@ -60,17 +73,17 @@
                 style="max-width: 200px"
               >
                 <p class="text-sm leading-5 text-gray-800 font-medium truncate">
-                  {{ patungan.title }}
+                  {{ campaign.title }}
                 </p>
               </td>
               <td class="border-t-2 border-gray-200 px-4 py-3">
                 <div class="text-sm leading-5">
-                  {{ patungan.member }}/{{ patungan.totalMember }}
+                  {{ campaign.total_members }}/{{ campaign.slot_capacity }}
                 </div>
               </td>
 
               <td class="border-t-2 border-gray-200 px-4 py-3">
-                {{ formatRupiah(patungan.dana, 'Rp. ') }}
+                {{ campaign.slot_price | formatRupiah }}
               </td>
               <td class="border-t-2 border-gray-200 px-4 py-3 text-xs">
                 <span
@@ -78,51 +91,57 @@
                 >
                   <span
                     aria-hidden
-                    class="absolute inset-0 bg-red-600 rounded-full"
-                    v-if="patungan.status === 'pending'"
-                  ></span>
+                    class="bg-yellow-500 rounded-full text-xs font-bold capitalize text-white m-0 px-2 py-1"
+                    v-if="campaign.status === 0"
+                    >Aktif</span
+                  >
                   <span
                     aria-hidden
-                    class="absolute inset-0 bg-gray-700 rounded-full"
-                    v-if="patungan.status === 'refund'"
-                  ></span>
+                    class="bg-indigo-500 rounded-full text-xs font-bold capitalize text-white m-0 px-2 py-1"
+                    v-if="campaign.status === 1"
+                    >Berlangsung</span
+                  >
                   <span
                     aria-hidden
-                    class="absolute inset-0 bg-yellow-500 rounded-full"
-                    v-if="patungan.status === 'aktif'"
-                  ></span
-                  ><span
-                    aria-hidden
-                    class="absolute inset-0 bg-indigo-500 rounded-full"
-                    v-if="patungan.status === 'berlangsung'"
-                  ></span
-                  ><span
-                    aria-hidden
-                    class="absolute inset-0 bg-green-400 rounded-full"
-                    v-if="patungan.status === 'selesai'"
-                  ></span>
+                    class="bg-gray-600 rounded-full text-xs font-bold capitalize text-white m-0 px-2 py-1"
+                    v-if="campaign.status === 2"
+                    >Expired</span
+                  >
                   <span
-                    class="relative text-xs font-bold cursor-pointer capitalize text-white m-0"
-                    >{{ patungan.status }}</span
+                    aria-hidden
+                    class="bg-red-600 rounded-full text-xs font-bold capitalize text-white m-0 px-2 py-1"
+                    v-if="campaign.status === 3"
+                    >Refund</span
+                  >
+                  <span
+                    aria-hidden
+                    class="bg-red-300 rounded-full text-xs font-bold capitalize text-white m-0 px-2 py-1"
+                    v-if="campaign.status === 4"
+                    >Selesai Refund</span
+                  >
+                  <span
+                    aria-hidden
+                    class="bg-green-400 rounded-full text-xs font-bold capitalize text-white m-0 px-2 py-1"
+                    v-if="campaign.status === 5"
+                    >Selesai</span
                   >
                 </span>
               </td>
               <td class="border-t-2 border-gray-200 px-4 py-3">
-                <div class="group inline-block relative">
+                <div
+                  class="group inline-block relative"
+                  v-click-outside
+                  @clicked-outside="showDetail()"
+                >
                   <button
-                    class="items-center px-1 py-0.5 border bg-white text-blue-500 rounded transition duration-300 focus:outline-none flex font-semibold"
+                    class="items-center px-2 py-1 border bg-white text-indigo-500 rounded transition duration-300 focus:outline-none flex font-semibold"
                     @click="showDetail(index)"
-                    :disabled="
-                      patungan.status == 'pending' ||
-                      patungan.status == 'refund'
-                    "
+                    :disabled="campaign.status == '3' || campaign.status == '2'"
                     :class="{
                       'disabled:opacity-50 bg-gray-300 border-gray-500':
-                        patungan.status == 'pending' ||
-                        patungan.status == 'refund',
+                        campaign.status == '2' || campaign.status == '3',
                       'border-indigo-400 hover:border-indigo-700':
-                        patungan.status != 'pending' ||
-                        patungan.status == 'refund',
+                        campaign.status != '2' || campaign.status == '3',
                     }"
                   >
                     Detail
@@ -149,14 +168,17 @@
                     </svg>
                   </button>
                   <ul
-                    class="bg-white text-gray-800 border cursor-pointer rounded transform absolute divide-y transition duration-300 ease-in-out mt-1 origin-left z-50 right-0 min-w-auto"
+                    class="shadow-md bg-white text-gray-800 cursor-pointer rounded transform absolute divide-y transition duration-300 ease-in-out mt-1 origin-left z-50 right-0 min-w-auto"
                     :class="{
                       '': activeDetail == index,
                       hidden: activeDetail != index,
                     }"
                   >
                     <li class="px-2 py-2 hover:bg-gray-100 w-full border-none">
-                      <a class="inline-flex items-center" href="detail/1">
+                      <a
+                        class="inline-flex items-center"
+                        :href="`/users/${getIdUser}/campaign/${campaign.id}`"
+                      >
                         <svg
                           class="w-4 h-4 mr-2"
                           xmlns="http://www.w3.org/2000/svg"
@@ -223,6 +245,7 @@ export default {
     return {
       activeDetail: null,
       detail: false,
+      campaigns: null,
       dataPatungan: [
         {
           title: 'Sharing Account Netflix 1 Tahun',
@@ -265,35 +288,36 @@ export default {
   },
   methods: {
     showDetail(value) {
-      console.log(value)
       if (value === this.activeDetail) {
         this.activeDetail = null
       } else {
         this.activeDetail = value
       }
     },
-
-    formatRupiah(angka, prefix) {
-      var number_string = String(angka)
-          .replace(/[^,\d]/g, '')
-          .toString(),
-        split = number_string.split(','),
-        sisa = split[0].length % 3,
-        rupiah = split[0].substr(0, sisa),
-        ribuan = split[0].substr(sisa).match(/\d{3}/gi)
-
-      if (ribuan) {
-        let separator = sisa ? '.' : ''
-        rupiah += separator + ribuan.join('.')
-      }
-
-      rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah
-      return prefix === undefined ? rupiah : rupiah ? 'Rp. ' + rupiah : ''
-    },
   },
   watch: {
     $route(to, from) {
       this.showDetail()
+    },
+  },
+  mounted() {
+    this.$axios
+      .$get(
+        process.env.API_DEV_URL +
+          `campaign/user/${this.$store.state.user.id}?host=true`
+      )
+      .then((resp) => {
+        console.log(resp)
+        this.campaigns = resp.campaigns
+        // console.log(this.campaigns)
+      })
+      .catch((errors) => {
+        console.log(errors)
+      })
+  },
+  computed: {
+    getIdUser() {
+      return this.$store.state.user.id
     },
   },
 }

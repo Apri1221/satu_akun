@@ -9,7 +9,7 @@
         <input
           type="search"
           name="serch"
-          placeholder="Cari apa? ex: Netflix, Udemy"
+          placeholder="Cari apa? contoh: Netflix, Udemy"
           class="bg-gray-100 w-full h-10 px-5 py-6 pr-10 rounded-full text-md focus:outline-none shadow-md"
         />
         <button type="submit" class="absolute right-0 top-0 mt-4 mr-4">
@@ -42,7 +42,7 @@
           <div class="w-full lg:pr-10 rounded-lg md:w-2/3 lg:w-1/2 group">
             <div class="relative xs:px-10">
               <img
-                src="~/assets/img/home_cinema.svg"
+                src="/home_cinema.svg"
                 class="z-10 object-cover w-full h-full"
               />
             </div>
@@ -62,7 +62,9 @@
             <p
               class="block mt-6 text-base text-gray-600 xl:text-lg sm:text-center lg:text-left"
             >
-              Platform yang memfasilitasi pencarian teman dalam berlanggaan bersama di penyedia layanan hiburan hingga edukasi/pembelajaran dengan proses yang mudah, aman, legal* dan murah.
+              Platform yang memfasilitasi pencarian teman dalam berlanggaan
+              bersama di penyedia layanan hiburan hingga edukasi/pembelajaran
+              dengan proses yang mudah, aman, dan murah.
             </p>
             <div class="relative flex mt-10 mx-auto lg:ml-0">
               <a
