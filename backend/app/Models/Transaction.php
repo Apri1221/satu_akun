@@ -2,6 +2,7 @@
 
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 use Jenssegers\Optimus\Optimus;
 
 class Transaction extends Model 
@@ -21,14 +22,18 @@ class Transaction extends Model
         'total_nominal',
         'no_rek_origin',
         'no_rek_destination',
+        'timeout',
         'status',
         'updated_by',
         'created_by',
+        // butuh atas nama
     ];
+
 
     // yang gak akan ditampilkan atribut nya diluar dari lingkungan lumen/laravel
     protected $hidden = [
         // 'password',
+        'delete'
     ];
 
 
@@ -50,6 +55,11 @@ class Transaction extends Model
         $this->attributes['no_transaction'] = $this->encode($value);
     }
 
+    public function setNoTimeoutAttribute()
+    {
+        $this->attributes['timeout'] = Carbon::now()->addHours(2);
+    }
+
     /**
      * relasi yang digunakan misal:
      * campaign berelasi (punya id_campaign) pada tabel campaign member
@@ -57,12 +67,12 @@ class Transaction extends Model
      */
     public function campaigns()
     {
-        return $this->belongsTo(Campaign::class);
+        return $this->belongsTo(Campaign::class, 'campaign_id');
     }
 
     public function users()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
 }

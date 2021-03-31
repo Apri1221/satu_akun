@@ -1,9 +1,10 @@
 <template>
-  <div class="lg:px-10">
+  <div class="">
     <section
       class="container px-4 mx-auto flex flex-wrap items-center justify-between"
     >
-      <div
+        <!-- Mending diganti dengan sesuatu yg menunjukkan utk buat campaign baru -->
+      <!-- <div
         class="relative items-center text-gray-900 mb-10 xs:mb-5 w-1/2 xs:w-full mx-auto"
       >
         <input
@@ -32,23 +33,20 @@
             />
           </svg>
         </button>
-      </div>
+      </div> -->
       <!-- min-h-screen min-w-screen -->
-      <div class="flex flex-col items-center bg-white pt-8">
+      <div class="flex flex-col items-center bg-white">
         <!-- flex-col -->
         <div
-          class="flex flex-col-reverse items-center justify-center p-10 mx-auto lg:flex-row lg:max-w-6xl lg:p-0 xs:p-0 xs:top-0"
+          class="flex flex-col-reverse items-center justify-center mx-auto lg:flex-row lg:max-w-6xl lg:p-0 xs:p-0 xs:top-0"
         >
           <div class="w-full lg:pr-10 rounded-lg md:w-2/3 lg:w-1/2 group">
-            <div class="relative xs:px-10">
-              <img
-                src="~/assets/img/home_cinema.svg"
-                class="z-10 object-cover w-full h-full"
-              />
+            <div class="relative xs:px-4">
+                <div v-once ref="animation"></div>
             </div>
           </div>
           <div
-            class="container flex flex-col w-full px-5 lg:pr-12 mb-16 text-2xl text-gray-700 lg:w-1/2 sm:px-0 md:px-10 sm:items-center lg:items-start lg:mb-0"
+            class="container flex flex-col w-full px-5 lg:pr-12 mb-4 text-2xl text-gray-700 lg:w-1/2 sm:px-0 md:px-10 sm:items-center lg:items-start lg:mb-0"
           >
             <h1
               class="font-sans text-4xl font-extrabold leading-none text-black sm:text-5xl xl:text-6xl sm:text-center lg:text-left"
@@ -56,8 +54,8 @@
               <!-- <span
                 class="relative bottom-0 left-0 inline-block w-full h-4 mb-1 -ml-1 transform -skew-x-3 bg-yellow-200"
               ></span> -->
-              <span class="">Watch Together,</span>
-              <span class="block text-yellow-400">Pay Together.</span>
+              <span class="">Cara Aman,</span>
+              <span class="block text-yellow-400">Buat Patungan.</span>
             </h1>
             <p
               class="block mt-6 text-base text-gray-600 xl:text-lg sm:text-center lg:text-left"
@@ -66,10 +64,11 @@
               bersama di penyedia layanan hiburan hingga edukasi/pembelajaran
               dengan proses yang mudah, aman, dan murah.
             </p>
-            <div class="relative flex mt-10 mx-auto lg:ml-0">
+            <div class="relative flex flex-row mt-10 mx-auto lg:ml-0">
               <a
-                href="#section2"
-                class="flex items-center px-5 py-3 rounded-md text-base text-white transition bg-indigo-500 hover:bg-indigo-600 focus:bg-indigo-700"
+                href="#campaign"
+                class="flex items-center px-5 py-3 mx-3 rounded-md text-base text-white transition bg-indigo-500 hover:bg-indigo-600 focus:bg-indigo-700"
+                style="text-align: center"
                 >Mulai Patungan
                 <svg
                   class="ml-2 animate-bounce w-4 h-4 text-amber-900"
@@ -83,6 +82,12 @@
                   <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                 </svg>
               </a>
+              <NuxtLink
+                to="campaign/create"
+                class="flex items-center px-5 py-3 mx-3 rounded-md text-base text-gray-700 transition bg-white border-yellow-400 border-2 hover:bg-yellow-400"
+                style="text-align: center"
+                >Buat Campaign
+              </NuxtLink>
             </div>
           </div>
         </div>
@@ -92,12 +97,23 @@
 </template>
 
 <script>
-import Carousel from '@/components/Carousel/Carousel'
+import lottie from 'lottie-web'
 
 export default {
   name: 'Landing',
   data() {
     return {}
+  },
+  mounted() {
+    //   https://lottiefiles.com/38964-group-of-people-communicating
+    // https://assets4.lottiefiles.com/packages/lf20_5e7wgehs.json
+      lottie.loadAnimation({
+        container: this.$refs["animation"], // the dom element that will contain the animation
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'https://assets4.lottiefiles.com/packages/lf20_5e7wgehs.json' // the path to the animation json
+      });
   },
 }
 </script>

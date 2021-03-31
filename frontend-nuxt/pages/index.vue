@@ -10,27 +10,27 @@
 
     <template>
       <!-- Content disini -->
-      <Landing class="my-12" />
+      <Landing class="my-4" />
       <!-- component campaign -->
       <section
-        id="section2"
-        class="container px-4 my-12 mx-auto flex flex-wrap items-center justify-between"
+        id="campaign"
+        class="container px-4 my-4 mx-auto flex flex-wrap items-center justify-between"
       >
         <div
           class="flex flex-col items-center justify-center bg-white min-h-screen w-full"
         >
           <div class="text-center mb-10">
-            <h1 class="font-sans text-3xl font-bold text-black mb-4">
-              Patungin aja lebih murah
+            <h1 class="sm:text-3xl text-2xl font-medium text-center title-font text-gray-900 mb-4">
+              <b class="logo">Patungin</b> mudah dan murah banget
             </h1>
             <p
-              class="text-gray-700 tracking-widest font-sans leading-relaxed text-base"
+              class="text-base leading-relaxed"
             >
               Yuk mulai patungan!
             </p>
           </div>
           <div
-            class="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-6 gap-4"
+            class="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 md:gap-6 gap-4 w-full"
           >
             <CardCampaign
               v-for="(campaign, id) in campaigns"
@@ -43,12 +43,14 @@
 
       <!-- component hero keunggulan -->
       <section class="text-gray-700 body-font mb-12">
-        <div class="container px-5 mx-auto flex flex-wrap items-center justify-center">
+        <div
+          class="container px-5 mx-auto flex flex-wrap items-center justify-center"
+        >
           <div class="text-center mb-10">
             <h1
               class="sm:text-3xl text-2xl font-medium text-center title-font text-gray-900 mb-4"
             >
-              <b>Patungin</b> aja
+              Kenapa pakai <b class="logo">Patungin</b>?
             </h1>
             <p class="text-base leading-relaxed">
               Merdeka dalam akses apa saja melalui patungan. Kamu bisa patungan
@@ -234,10 +236,9 @@ export default {
   },
   mounted() {
     this.$axios
-      .$get(process.env.API_DEV_URL + `campaign/`)
+      .$get(`campaign`)
       .then((resp) => {
         this.campaigns = resp.campaigns
-        console.log(this.campaigns)
       })
       .catch((errors) => {
         console.dir(errors)

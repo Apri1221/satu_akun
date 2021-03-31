@@ -9,26 +9,12 @@
           <a
             class="flex title-font font-medium items-center lg:justify-start justify-center text-gray-900"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              class="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-              ></path>
-            </svg>
-            <span class="ml-3 text-xl tracking-wide logo">Patungin.com</span>
+            <span class="text-xl tracking-wide logo">Patungin.com</span>
           </a>
           <p class="mt-2 text-sm text-gray-600">
-            Kami, sekelompok anak muda berlatar belakang IT, membuat platform
-            beserta fasiltas-fasilitasnya untuk patungan membeli akun berbayar.
-            (Wording)
+            Kami, sekelompok anak muda berlatar belakang IT dan bisnis, membuat
+            platform beserta fasiltas-fasilitasnya untuk patungan membeli akun
+            berbayar. (Wording)
           </p>
         </div>
 
@@ -66,14 +52,15 @@
               <li>
                 <NuxtLink
                   class="text-gray-600 hover:text-gray-800 cursor-pointer text-sm md:text-base"
-                  to="/about"
+                  to="/tnc"
                   >Kebijakan Privasi</NuxtLink
                 >
               </li>
               <li>
-                <a
+                <NuxtLink
                   class="text-gray-600 hover:text-gray-800 cursor-pointer text-sm md:text-base"
-                  >FAQ</a
+                  to="/faq"
+                  >FAQ</NuxtLink
                 >
               </li>
               <li>
@@ -160,13 +147,13 @@
         class="container mx-auto py-4 px-5 flex flex-wrap flex-col sm:flex-row"
       >
         <p class="text-white text-sm text-center sm:text-left">
-          © 2020 satu_akun —
+          © 2020 Patungin —
           <a
             href="https://twitter.com/apri0498"
             class="text-gray-300 ml-1"
             target="_blank"
             rel="noopener noreferrer"
-            >@satu_akun</a
+            >@patungin</a
           >
         </p>
         <span

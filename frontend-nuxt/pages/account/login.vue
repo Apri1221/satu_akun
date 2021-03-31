@@ -2,8 +2,8 @@
 <template>
     <!-- Content disini -->
     <!-- component login -->
-    <div class="flex items-center justify-center mt-12">
-        <div class="w-full max-w-md py-5">
+    <div class="flex items-center justify-center mt-8">
+        <div class="w-full max-w-md py-5 px-3">
             <form @submit.prevent="login" class="bg-gray-100 shadow-lg rounded-md px-8 xs:px-4 pt-6 pb-8 mb-4 mx-4 ">
                 <!-- @csrf -->
                 <div class="text-indigo-500 text-3xl font-semibold flex justify-center py-2 mb-6">
@@ -22,22 +22,23 @@
                 <span class="text-red-500 font-medium py-2 text-xs" v-if="errorStatus">{{ errorMessage }}</span>
                 <span v-if="errorCode == 404 && errorStatus == true" class="text-indigo-500 font-medium py-2 underline text-sm cursor-pointer" @click.prevent="resendOtp">Kirim ulang OTP?</span>
                 <div class="mt-4 mb-3 flex items-center justify-between">
-                    <button class=" px-6 py-2 w-1/3 rounded text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 focus:bg-indigo-700" type="submit">
-                    <span class="inline-flex items-center p-0 m-0">
-                    <svg v-if="loading" 
-                        class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                        Masuk</span>
+                    <button class="px-6 py-2 min-w-1/3 rounded text-white shadow-lg bg-indigo-500 hover:bg-indigo-600 focus:bg-indigo-700" type="submit">
+                        <span class="inline-flex items-center p-0 m-0">
+                        <svg v-if="loading" 
+                            class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            fill="none" 
+                            viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                            Masuk
+                        </span>
                     </button>
                     <!-- Kenapa kita ga provide lupa password? Karena kita gabisa otomatis kirim link ke email mereka, harus manual -- knp ngga bisa? bukannya tinggal pake request api by email user pake findOrFail, kalo nemu send email smtp ke email tsb(?)koreksi kalo salah... -->
-                    <a class="inline-block align-baseline font-normal text-sm text-indigo-500 hover:text-indigo-800" href="#">
-                        Butuh bantuan?
-                    </a>
+                    <NuxtLink to="change-password/request" class="inline-block align-baseline font-normal text-sm text-indigo-500 hover:text-indigo-800">
+                        Lupa password?
+                    </NuxtLink>
                 </div>
                 <div class="flex">
                     <NuxtLink to="/account/register" class="inline-block align-baseline font-normal text-sm text-indigo-500 hover:text-indigo-800 cursor-pointer" href="#">
@@ -69,26 +70,15 @@ export default {
     login() {
       this.loading = true
       this.$axios
-        .$post(process.env.API_DEV_URL + 'auth/login', {
+        .$post('auth/login', {
           email: this.form.email,
           password: this.form.password,
         })
         .then(({ token, expires_in }) => {
+            this.loading = false
           this.$store.dispatch('auth/setToken', { token, expires_in })
           // this.$router.push({name: 'secret'});
-          console.log({ token, expires_in })
           this.getProfile({ token, expires_in })
-          // jangan kembali ke otp
-            // 
-        
-          // if (this.$router.history._startLocation.split('/').indexOf('validate-otp') != -1) {
-          //       //   aku jadi error wkwkw
-          //       // skenarionya aku langsung buka link dari gmail dan semua tab hp ku ttg situs ini udah dihapus, jadi pas -2 dah rusak
-          //     this.$router.back() // aku ubah 2 link sebelumnya, u/ mengatasi ketika dia daftar, biar tidak langsung ke halaman checkout
-          // } else {
-          //     window.location.replace('/')
-          
-          // }  proses direct routingnya aku pindah ke getProfile, soalnya error trs buat dptin datausernya
          
         })
         .catch((errors) => {
@@ -110,7 +100,7 @@ export default {
         headers: { Authorization: `Bearer ${token}` },
       }
       this.$axios
-      .$get(process.env.API_DEV_URL + 'profile', null, config)
+      .$get('profile', null, config)
       .then((res)=>{
       this.$store.dispatch('getUserProfile', res.user)
       
@@ -132,7 +122,7 @@ export default {
     resendOtp() {
       let id_user = this.idUser
       this.$axios
-        .$get(process.env.API_DEV_URL + `auth/resend-otp/${id_user}`)
+        .$get(`auth/resend-otp/${id_user}`)
         .then((resp) => {
             window.location.replace(`/account/validate-otp/${id_user}`)
         })

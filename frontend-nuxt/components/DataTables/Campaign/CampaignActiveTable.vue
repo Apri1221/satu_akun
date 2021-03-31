@@ -34,15 +34,15 @@
             class="border-t-2 hover:bg-gray-200"
           >
             <td class="px-3 truncate" style="max-width: 150px">
-              {{ row.name }}
+              {{ row.title }}
             </td>
             <td class="px-3 truncate" style="max-width: 150px">
-              {{ row.host }}
+              {{ row.host_name.name }}
             </td>
             <td class="px-4 py-3 text-xs">
               <span
                 class="relative h-full px-3 py-1 font-semibold leading-tight text-center inline-block"
-                v-if="row.member == row.gathered"
+                v-if="row.total_members == row.slot_capacity"
               >
                 <span
                   aria-hidden
@@ -54,13 +54,13 @@
                 >
               </span>
               <span v-else class="font-bold text-lg ml-3"
-                >{{ row.gathered }}/{{ row.member }}</span
+                >{{ row.total_members }}/{{ row.slot_capacity }}</span
               >
             </td>
-            <td class="px-3">{{ row.created | formatDate }}</td>
+            <td class="px-3">{{ row.created_at | formatDate }}</td>
 
             <td class="px-3">
-              {{ row.expired | formatDate }}
+              {{ row.expired_date | formatDate }}
             </td>
             <td class="justify-between py-2 inline-block relative">
               <div class="inline-flex">
@@ -100,7 +100,7 @@
                   <li class="px-2 py-2 hover:bg-gray-200 w-full border-none">
                     <a
                       class="inline-flex items-center"
-                      @click="showDetailCampaign()"
+                      :href="`/users/${$store.state.user.id}/campaign/${row.id}`"
                     >
                       <svg
                         class="w-4 h-4 mr-2"
@@ -128,7 +128,7 @@
                   <li class="px-2 py-2 hover:bg-gray-200 w-full border-none">
                     <a
                       class="inline-flex items-center"
-                      :href="'https://wa.me/62' + row.telp"
+                      :href="'https://wa.me/62' + row.host_name.whatsapp"
                       target="_blank"
                     >
                       <svg
@@ -274,6 +274,7 @@
 <script>
 export default {
   name: 'CampaignActiveTable',
+  props: ['campaigns'],
   data() {
     return {
       modal: {
@@ -287,32 +288,6 @@ export default {
       filters: {
         name: { value: '', keys: ['name', 'email'] },
       },
-      campaigns: [
-        {
-          name: 'akun netflix 1 bulan dijamin aman',
-          host: 'Elisabeth Olsen',
-          member: 5,
-          gathered: 1,
-          created: new Date(),
-          expired: new Date(),
-        },
-        {
-          name: 'akun netflix 1 bulan dijamin aman',
-          host: 'Elisabeth Olsen',
-          member: 5,
-          gathered: 5,
-          created: new Date(),
-          expired: new Date(),
-        },
-        {
-          name: 'akun netflix 1 bulan dijamin aman',
-          host: 'Elisabeth Olsen',
-          member: 5,
-          gathered: 3,
-          created: new Date(),
-          expired: new Date(),
-        },
-      ],
     }
   },
   methods: {

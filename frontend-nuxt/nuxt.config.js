@@ -1,3 +1,6 @@
+let isDev = process.env.NODE_ENV !== 'production'
+
+
 export default {
   // Disable server-side rendering (https://go.nuxtjs.dev/ssr-mode)
   ssr: false,
@@ -13,7 +16,10 @@ export default {
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: '' },
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'stylesheet', href :'https://fonts.googleapis.com/css2?family=Righteous&display=swap'}
+    ],
   },
 
   // untuk generate file robots.txt, disable dulu
@@ -32,6 +38,8 @@ export default {
     '~/plugins/close-event.client.js',
     '~/plugins/filters.js',
     '~/plugins/datatable.js',
+    '~/plugins/inject-token.js',
+    '~/plugins/v-shared-element.client.js',
 
     { src: '~/plugins/vuex-persist', ssr: false },
   ],
@@ -61,7 +69,8 @@ export default {
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
   axios: {
-    baseURL: process.env.API_DEV_URL,
+    baseURL: !isDev ? process.env.API_PROD_URL : process.env.API_DEV_URL,
+    retry: { retries: 3 },
   },
 
   // Content module configuration (https://go.nuxtjs.dev/config-content)

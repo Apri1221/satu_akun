@@ -1,11 +1,15 @@
 <?php
 
 namespace App\Models;
+
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Campaign extends Model 
 {
+    use FullTextSearch;
+    
     // defenisi tabel yg digunakan di database
     protected $table = 'campaigns';
 
@@ -30,19 +34,52 @@ class Campaign extends Model
     // yang gak akan ditampilkan atribut nya diluar dari lingkungan lumen/laravel
     protected $hidden = [
         // 'password_email',
+        'delete'
     ];
 
-    protected $appends = ['slug'];
+    /**
+     * The columns of the full text index
+     * https://arianacosta.com/php/laravel/tutorial-full-text-search-laravel-5/
+     */
+    protected $searchable = [
+        'title',
+        'description',
+    ];
+
+    protected $appends = ['slug', 'host_name', 'calculated_price'];
 
     public function getSlugAttribute()
     {
         return Str::slug($this->attributes['title']);
     }
 
+    // dynamically get hostname by default
+    public function getHostNameAttribute() 
+    {
+        $campaign_members = CampaignMember::with('users')->where(['campaign_id' => $this->id, 'is_host' => 1])->first();
+        return $campaign_members->users ?? null;
+    }
+
+    public function getCalculatedPriceAttribute() {
+        return getCalculatedPrice($this->attributes['slot_price']);
+    }
+
     // public function getTotalMembersAttribute($value)
     // {
     //     return $value - 1;
     // }
+
+
+    public function scopeActive($query) 
+    {
+        return $query->where('expired_date', '>=', Carbon::now())->where('status', '0');
+    }
+
+    // - filter berdasarkan status, 0 = aktif, 1 = berlangsung, 2 = expired, 3 = refund, 4 = selesai refund, 5 = selesai
+    public function scopeStatusCampaign($query, $status) 
+    {
+        return $query->where('status', $status);
+    }
 
     /**
      * relasi yang digunakan misal:

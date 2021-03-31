@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateCampaignsTable extends Migration
@@ -20,7 +21,7 @@ class CreateCampaignsTable extends Migration
             
             $table->unsignedBigInteger('email_id')->index()->nullable();
             $table->foreign('email_id')->references('id')->on('emails');
-            $table->unsignedBigInteger('categories_id')->index();
+            $table->unsignedBigInteger('categories_id')->index()->nullable();
             $table->foreign('categories_id')->references('id')->on('campaign_categories');
 
             $table->dateTime('expired_date', $precision = 0);
@@ -32,12 +33,16 @@ class CreateCampaignsTable extends Migration
             $table->string('media_url')->nullable();
             $table->string('password_email');
 
+            $table->boolean('delete')->default(0); // delete status
+
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
             
-            $table->index(['title']);
             $table->timestamps();
         });
+
+        // untuk digunakan dalam fulltext search
+        DB::statement("ALTER TABLE campaigns ADD FULLTEXT fulltext_index (title, description)");
     }
 
     /**

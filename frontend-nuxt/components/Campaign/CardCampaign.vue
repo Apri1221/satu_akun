@@ -4,9 +4,14 @@
   >
     <NuxtLink exact :to="`/campaign/${campaign.id}/${campaign.slug}`">
       <div class="col-span-4 relative">
+        <!-- src="https://picsum.photos/640/400/?random" -->
         <img
-          src="https://picsum.photos/640/400/?random"
-          alt="Placeholder"
+          :src="
+            campaign.media_url !== ``
+              ? campaign.media_url
+              : require(`~/assets/img/default-img.jpeg`)
+          "
+          alt="no-image"
           class="rounded-t-lg object-cover h-48 xs:h-32 w-full"
         />
 
@@ -14,7 +19,7 @@
           class="bg-indigo-500 absolute bottom-0 right-0 p-3 rounded-tl-md xs:py-1"
         >
           <p class="font-bold text-white text-md sm:text-sm xs:text-xs">
-            {{ campaign.slot_price | formatRupiah
+            {{ campaign.calculated_price | formatRupiah
             }}<span class="font-normal">/orang</span>
           </p>
         </div>
@@ -34,9 +39,7 @@
 
         <div class="col-span-3 row-span-1 truncate">
           <a class="text-sm" href="#">
-            <span class="font-medium text-indigo-500">{{
-              campaign.host_name
-            }}</span>
+            <span class="font-medium text-indigo-500">{{ host_name }}</span>
           </a>
         </div>
 
@@ -79,7 +82,7 @@
 
           <div class="pb-2 pt-1 w-full">
             <div
-              class="bg-green-200 h-4 p-1 w-full rounded-full items-center justify-center relative"
+              class="bg-green-100 h-4 p-1 w-full rounded-full items-center justify-center relative"
             >
               <span
                 class="bg-indigo-500 h-2 absolute rounded-full"
@@ -110,6 +113,7 @@
   </div>
 </template>
 <script>
+
 export default {
   name: 'CardCampaign',
   props: ['title', 'campaign'],
@@ -118,7 +122,16 @@ export default {
       price: '53000',
     }
   },
+  computed: {
+    host_name: function () {
+      return this.campaign.host_name !== null
+        ? this.campaign.host_name.name
+        : ''
+    }
+  },
   methods: {},
+  mounted() {
+  },
 }
 </script>
 <style>

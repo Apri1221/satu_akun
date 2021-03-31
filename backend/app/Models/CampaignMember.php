@@ -1,10 +1,13 @@
 <?php
 
 namespace App\Models;
+
+use App\Observers\CampaignMemberObserver;
 use Illuminate\Database\Eloquent\Model;
 
 class CampaignMember extends Model 
 {
+    use CampaignMemberObserver;
     // defenisi tabel yg digunakan di database
     protected $table = 'campaign_members';
 
@@ -32,12 +35,12 @@ class CampaignMember extends Model
      */
     public function campaigns()
     {
-        return $this->belongsTo(Campaign::class, 'campaign_id');
+        return $this->belongsTo(Campaign::class, 'campaign_id', 'id');
     }
 
     public function users()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
 }

@@ -7,11 +7,15 @@
       <div class="bg-blue-100 p-3 rounded-lg xs:text-sm">
         <p>
           Pastikan campaign Anda sesuai dengan
-          <b>syarat dan ketentuan Berpatungan.com</b>.
+          <b
+            ><NuxtLink to="/about" class="hover:text-indigo-500 text-red-500"
+              >syarat dan ketentuan Patungin.com</NuxtLink
+            ></b
+          >.
         </p>
         <p>
           Berpatungan menghimbau untuk menjalankan campaign yang wajar atau
-          campaign Anda dapat diturunkan oleh Berpatungan.com sesuai S&K yang
+          campaign Anda dapat diturunkan oleh Patungin.com sesuai S&K yang
           berlaku.
         </p>
       </div>
@@ -66,7 +70,7 @@
           <div class="grid grid-cols-3 gap-2">
             <label class="inline-flex items-center py-2 xs:py-0">
               <select
-                class="w-full border capitalize focus:outline-none focus:ring focus:border-indigo-400 py-2 rounded xs:text-sm"
+                class="w-full border capitalize focus:outline-none focus:ring focus:border-indigo-400 py-2 px-2 rounded xs:text-sm"
                 name="categories"
                 v-model="campaign.categories_id"
               >
@@ -159,8 +163,7 @@
           >
           <p class="text-xs md:pr-20">
             Anda bebas menentukan harga setiap slot yang harus dikeluarkan
-            anggota campaign. Pastikan harga yang Anda tawarkan cukup masuk
-            akal.
+            anggota campaign. Minimal harga adalah 10 ribu rupiah.
           </p>
         </div>
 
@@ -174,9 +177,10 @@
             <input
               type="number"
               name="price"
+              min="10000"
               id="price"
               class="border focus:outline-none focus:ring focus:border-indigo-400 p-2 xs:text-sm block w-full pl-10 rounded"
-              placeholder="0"
+              placeholder="10000"
               v-model="campaign.slot_price"
             />
           </div>
@@ -220,7 +224,7 @@
             </label>
             <label class="inline-flex items-center py-2 xs:py-0">
               <select
-                class="w-full border focus:outline-none focus:ring focus:border-indigo-400 py-2 rounded xs:text-sm"
+                class="w-full border focus:outline-none focus:ring focus:border-indigo-400 py-2 px-1 rounded xs:text-sm"
                 name="range_period"
                 id="range_period"
                 v-model="duration.unit"
@@ -304,9 +308,15 @@
       <div class="pb-5 flex flex-wrap items-center justify-between">
         <div
           id="empty-cover-art"
-          class="rounded w-full px-4 py-16 xs:py-8 text-center md:border-solid md:border md:border-gray-400"
+          class="rounded w-full md:px-4 py-16 xs:py-8 text-center md:border-solid md:border md:border-gray-400"
         >
+          <canvas
+            v-if="campaign.media_blob !== ''"
+            class="object-contain h-56 w-full mb-4"
+            id="canvas"
+          ></canvas>
           <svg
+            v-else
             class="mx-auto h-12 w-12 text-gray-500 m-3"
             stroke="currentColor"
             fill="none"
@@ -320,7 +330,12 @@
               stroke-linejoin="round"
             />
           </svg>
-          <input type="file" class="text-sm border rounded w-full p-3" />
+          <input
+            type="file"
+            accept="image/*"
+            class="text-sm border rounded w-full p-3"
+            @change="setImageFile"
+          />
           <!-- <div class="py-4">Tambah Foto</div> -->
         </div>
       </div>
@@ -334,8 +349,10 @@
       />
       <span class="ml-3 xs:ml-2 text-gray-700 xs:text-sm"
         >Kamu menyetujui
-        <NuxtLink to="/about" class="text-red-500">Syarat dan Ketentuan</NuxtLink> yang berlaku
-        pada layanan ini</span
+        <NuxtLink to="/about" class="text-red-500"
+          >Syarat dan Ketentuan</NuxtLink
+        >
+        yang berlaku pada layanan ini</span
       >
     </label>
 
@@ -370,7 +387,7 @@
             ></path>
           </svg>
 
-          Daftar</span
+          Buat Campaign</span
         >
       </button>
     </div>
@@ -378,6 +395,7 @@
 </template>
 <script>
 import moment from 'moment'
+import loadImage from 'blueimp-load-image'
 
 export default {
   name: 'Create_Campaign',
@@ -388,6 +406,7 @@ export default {
       loading: false,
       terms: false,
       categories: '',
+      img_base64: null,
       duration: {
         value: '',
         unit: 'days',
@@ -398,13 +417,14 @@ export default {
       campaign: {
         categories_id: '',
         title: '',
+        status: '0',
         description: '',
         expired_date: '',
         duration_date: '',
         durasi: '',
-        status: '',
         slot_capacity: '',
         slot_price: '',
+        media_blob: '',
         media_url: '',
         password_email: '',
       },
@@ -420,21 +440,25 @@ export default {
   methods: {
     handleSave() {
       this.loading = true
-      this.campaign.status = 1
       this.campaign.expired_date = moment(this.campaign.expired_date).format(
         'YYYY-MM-DD HH:mm:ss'
       )
       this.campaign.duration_date = moment(this.campaign.duration_date).format(
         'YYYY-MM-DD HH:mm:ss'
       )
-      console.log(this.campaign)
+
+      //   Smart ways, daripada capek pak formData satu satu, astagfiruloh
+      let formData = new FormData()
+      Object.keys(this.campaign).map((key) => {
+        formData.append(key, this.campaign[key])
+      })
+
       this.$axios
-        .$post(
-          process.env.API_DEV_URL +
-            `campaign/store/${this.$store.state.user.id}`,
-          this.campaign
+        .$post(`campaign/store/${this.$store.state.user.id}`,
+          formData
         )
         .then((resp) => {
+          console.log(resp)
           if (resp.message === 'CREATED') {
             this.$router.push(
               `/campaign/${resp.campaign.id}/${resp.campaign.slug}`
@@ -444,6 +468,66 @@ export default {
         .catch((errors) => {
           console.dir(errors)
         })
+    },
+
+    /**
+     * @param e = event dari input file onchange
+     */
+    async setImageFile(e) {
+      if (e !== null || e.target.files) {
+        this.campaign.media_blob = e.target.files[0]
+        var self = this
+
+        await loadImage(e.target.files[0], {
+          orientation: true,
+          meta: true,
+          canvas: true,
+        })
+          .then(function (data) {
+            if (!data.exif || !data.imageHead) return // jika tidak terdapat exif maka return
+            /**
+             * return blob, blob disimpan kembali ke file
+             * as jpeg
+             */
+            return new Promise(function (resolve) {
+              data.image.toBlob(function (blob) {
+                data.blob = blob
+                resolve(data)
+              }, 'image/jpeg')
+            })
+          })
+          .then(function (data) {
+            if (!data) return
+            self.campaign.media_blob = data.blob
+          })
+          .catch((err) => console.error(err))
+
+        // draw blob ke gambar as canvas
+        if (typeof FileReader === 'function') {
+          const reader = new FileReader()
+          reader.readAsDataURL(this.campaign.media_blob)
+          reader.onload = (event) => {
+            self.img_base64 = event.target.result
+            this.drawToCanvas(event.target.result)
+          }
+        }
+      }
+    },
+
+    /**
+     * hanya menerima base64
+     * @param base64 = string contain base64 file
+     */
+    drawToCanvas(base64) {
+      const img = new Image()
+      img.src = base64 // assign converted image to image object
+      img.onload = function () {
+        const canvas = document.getElementById('canvas') // create canvas object
+        const ctx = canvas.getContext('2d')
+        canvas.width = img.width
+        canvas.height = img.height
+        ctx.drawImage(img, 0, 0) // draw image
+      }
     },
 
     setDurationDate() {
@@ -500,7 +584,7 @@ export default {
 
   async mounted() {
     await this.$axios
-      .$get(process.env.API_DEV_URL + 'campaign/categories')
+      .$get('campaign/categories')
       .then((resp) => {
         const { categories } = resp
         this.categories = categories
