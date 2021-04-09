@@ -1,19 +1,16 @@
 <template>
-  <!-- Modal Form informasi akun -->
   <div
-    class="container mx-auto flex justify-center justify-items-start items-start absolute z-100 inset-0 -mt-40"
-    :class="[status ? '' : 'hidden']"
+    class="container mx-auto flex justify-center justify-items-start items-start absolute z-100 inset-0"
+    :class="[form.status ? '' : 'hidden']"
   >
-    <div class="fixed w-1/3 xs:w-full self-center">
+    <div class="fixed w-1/2 sm:w-2/3 xs:w-full self-center">
       <form class="bg-white rounded-lg shadow-lg mx-auto xs:mx-8">
-        <div
-          class="border-t-8 border-indigo-600 rounded-lg md:px-6 sm:px-4 xs:px-5"
-        >
+        <div class="border-t-8 border-indigo-600 rounded-lg px-10 xs:px-5">
           <div class="w-full pt-9 px-4 text-center">
             <h3
               class="font-bold text-indigo-500 pt-5 capitalize text-3xl xs:text-xl sm:text-2xl"
             >
-              Form {{ todo }} Email
+              Form Informasi Akun
             </h3>
           </div>
 
@@ -22,64 +19,66 @@
           >
             <div class="flex flex-col mb-1">
               <label class="leading-loose text-md">Email</label>
+              <!-- <input
+                  type="text"
+                  class="px-4 py-2 border focus:ring-gray-500 focus:border-indigo-400 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none text-gray-600"
+                  placeholder="Pilih Email"
+                /> -->
+              <select
+                class="w-full border focus:outline-none focus:ring focus:border-indigo-400 px-4 py-2 rounded-md sm:text-sm"
+                name="range_period"
+                id="range_period"
+                v-model="form.email_id"
+              >
+                <option>Pilih...</option>
+                <option v-for="item in emails" :key="item.id" :value="item.id">
+                  {{ item.email }}
+                </option>
+              </select>
+            </div>
+            <div class="flex flex-col mb-1">
+              <label class="leading-loose text-md">Password</label>
               <input
-                type="email"
+                type="text"
                 class="px-4 py-2 border focus:ring-gray-500 focus:border-indigo-400 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none text-gray-600"
-                placeholder="Masukan Email"
-                v-model="new_email.email"
+                placeholder="Masukan Password"
+                v-model="form.password_email"
               />
             </div>
             <div class="flex flex-col mb-1">
-              <label class="leading-loose text-md">Info</label>
+              <label class="leading-loose text-md">Deskripsi</label>
               <textarea
-                rows="3"
+                rows="6"
                 class="px-4 py-2 border focus:ring-gray-500 focus:border-indigo-400 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none text-gray-600"
-                placeholder="Masukan Informasi Tambahan"
-                v-model="new_email.info"
+                placeholder="Masukan Deskripsi Tambahan"
               />
             </div>
             <div class="flex flex-col mb-1">
-              <label class="leading-loose text-md">Status Email</label>
-              <div class="inline-flex text-sm">
-                <label class="inline-flex items-center mr-4">
-                  <input
-                    type="radio"
-                    class="form-radio h-4 w-4 text-gray-600"
-                    name="statusEmail"
-                    v-model="new_email.status"
-                    :checked="new_email.status == 1"
-                    :value="1"
-                  /><span class="ml-1 text-gray-700">Aktif</span>
-                </label>
-                <label class="inline-flex items-center">
-                  <input
-                    type="radio"
-                    class="form-radio h-4 w-4 text-gray-600"
-                    name="statusEmail"
-                    v-model="new_email.status"
-                    :checked="new_email.status == 0"
-                    :value="0"
-                  /><span class="ml-1 text-gray-700">Non-Aktif</span>
-                </label>
-              </div>
+              <label class="leading-loose text-md">Link Grup WA</label>
+              <input
+                type="textarea"
+                row="5"
+                class="px-4 py-2 border focus:ring-gray-500 focus:border-indigo-400 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none text-gray-600"
+                placeholder="Masukan url link"
+              />
             </div>
           </div>
         </div>
 
         <div class="p-4 flex space-x-4">
           <button
-            @click.prevent="createEmail(false)"
             class="w-1/2 px-4 py-3 text-center bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-black font-bold rounded-lg text-sm focus:outline-none"
+            @click.prevent="showForm(false)"
           >
             Batal
           </button>
           <button
-            class="w-1/2 px-4 py-3 text-center text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg hover:text-white font-bold text-sm focus:outline-none capitalize"
-            @click.prevent="createEmail(true, todo)"
+            class="w-1/2 px-4 py-3 text-center text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg hover:text-white font-bold text-sm focus:outline-none"
+            @click.prevent="saveInfoAccount"
           >
             <span class="inline-flex items-center p-0 m-0">
               <svg
-                v-if="loadingProcess"
+                v-if="form.loading"
                 class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -99,8 +98,8 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {{ todo }}
-            </span>
+              Simpan</span
+            >
           </button>
         </div>
       </form>
@@ -109,8 +108,7 @@
 </template>
 <script>
 export default {
-  name: 'ManageEmail',
-  props: ['status', 'todo', 'createEmail', 'new_email', 'loadingProcess'],
+  props: ['form', 'emails', 'showForm', 'saveInfoAccount'],
   data() {
     return {}
   },

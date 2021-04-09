@@ -9,6 +9,7 @@ use App\Models\CampaignCategories;
 use App\Models\CampaignMember;
 use App\Models\Transaction;
 use App\Models\User;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -35,7 +36,9 @@ class CampaignController extends Controller
         $is_all = $request->query('all') ?? false; // active true if false
         $search = $request->query('search') ?? null;
 
-        $campaigns = Campaign::with(['categories'])->withCount('campaign_members as total_members');
+        $campaigns = Campaign::with(['categories'])->withCount('campaign_members as total_members')->withCount(['campaign_members as slot_members' => function ($query) {
+            return $query->where('is_host', 0);
+         }]);
         
         // $campaigns = ($status !== null) ? $campaigns->statusCampaign($status) : $campaigns;
         // $campaigns = ($is_all !== false) ? $campaigns : $campaigns->active();
@@ -55,7 +58,9 @@ class CampaignController extends Controller
     }
 
     public function campaign($id_campaign, $slug = null) {
-        $campaign = Campaign::with(['campaign_members.users', 'categories'])->withCount('campaign_members as total_members')->findOrFail($id_campaign);
+        $campaign = Campaign::with(['campaign_members.users', 'categories'])->withCount('campaign_members as total_members')->withCount(['campaign_members as slot_members' => function ($query) {
+            return $query->where('is_host', 0);
+         }])->findOrFail($id_campaign);
         return response()->json(['campaigns' => $campaign], 200);
     }
 
@@ -77,6 +82,9 @@ class CampaignController extends Controller
                                     // ambil yang sudah di verif saja 
                                     // perlu juga dilakukan kalkulasi yg in atau out
                                     return $query->where('status', 1)->select(DB::raw('SUM(nominal)'));
+                             }])
+                             ->withCount(['campaign_members as slot_members' => function ($query) {
+                                return $query->where('is_host', 0);
                              }])
                              ->with(['emails', 'campaign_members' ])
                              ->whereHas('campaign_members', function ($query) use($id_user, $is_host) { 
@@ -240,7 +248,9 @@ class CampaignController extends Controller
     public function assignMemberToCampaign($id_campaign, $id_user, $is_host = false)
     {
         // aktifkan ini jika masa production
-        $campaign = Campaign::withCount('campaign_members as total_members')->findOrFail($id_campaign);
+        $campaign = Campaign::withCount('campaign_members as total_members')->withCount(['campaign_members as slot_members' => function ($query) {
+            return $query->where('is_host', 0);
+         }])->findOrFail($id_campaign);
         $user = User::findOrFail($id_user);
 
         if ($user->status !== 1 || CampaignMember::where(['user_id' => $user->id, 'campaign_id' => $id_campaign])->count() > 0) {
@@ -249,25 +259,22 @@ class CampaignController extends Controller
         
         // DB::beginTransaction();
         if ($campaign->total_members === $campaign->slot_capacity + 1) {
-            DB::rollBack();
-            return response()->json(['message' => 'Full Capacity'], 409);
+            return response()->json(['message' => 'Full Capacity'], 422);
         }
         
         try {
             $member_of_campaign = CampaignMember::create([
                 'user_id' => $id_user,
                 'campaign_id' => $id_campaign,
-                'is_host' => $is_host]);
+                'is_host' => $is_host
+            ]);
                 
 
             if ($is_host === true) return;
             $this->generateNewTransaction($campaign, $user);
             
-            // DB::commit();
             return response()->json(['campaign' => $member_of_campaign, 'message' => 'CREATED'], 201);
         } catch (\Exception $e) {
-            // return error message
-            // DB::rollBack();
             return response()->json(['message' => $e], 409);
         }
     }
@@ -303,6 +310,7 @@ class CampaignController extends Controller
                 'bank' => $bank,
                 'no_transaction' => $date->getTimestamp(),
                 'type' => 1,
+                'timeout' => Carbon::now()->addHours(2),
                 'nominal' => $price_after_fee,
                 'unique_code' => $random_code,
                 'total_nominal' => $final_price,
@@ -382,6 +390,21 @@ class CampaignController extends Controller
             $categories->delete();
             return response()->json(['message' => 'DELETED'], 201);
         } catch (\Exception $e) {
+            return response()->json(['message' => $e], 409);
+        }
+    }
+
+    public function updateCategories(Request $request, $id_categories) {
+        // 
+        try {
+            $categories = CampaignCategories::where('id', $id_categories)->first();
+            $categories->categories = $request->input('categories');
+            $categories->save();
+            $categories->touch();
+            // return successful response
+            return response()->json(['categories' => $categories, 'message' => 'CREATED'], 201);
+        } catch (\Exception $e) {
+            // return error message
             return response()->json(['message' => $e], 409);
         }
     }

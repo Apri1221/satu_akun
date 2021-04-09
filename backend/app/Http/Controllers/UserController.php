@@ -44,6 +44,9 @@ class UserController extends Controller
         return response()->json(['users' => User::with('social_media')->find($id_user)], 200);
     }
 
+    /**
+     * detele user ada di auth
+     */
     public function deleteUser($id_user) {
         $user = User::findOrFail($id_user);
         try {
@@ -56,6 +59,19 @@ class UserController extends Controller
             return response()->json(['user' => $user, 'message' => 'UPDATED'], 201);
         } catch (\Exception $e) {
             // return error message
+            return response()->json(['message' => $e], 409);
+        }
+    }
+    
+
+    public function changeStatusUser($id_user, $status) {
+        $user = User::where(['id' => $id_user])->first();
+        try {
+            $user->status = $status;
+            $user->save();
+            $user->touch();
+            return response()->json(['message' => 'SUCCESS', 'user' => $user], 200);
+        } catch (\Exception $e) {
             return response()->json(['message' => $e], 409);
         }
     }

@@ -3,10 +3,8 @@
 
 namespace App\Observers;
 
-use App\Jobs\MailJob;
 use App\Models\Campaign;
-use App\Models\CampaignMember;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Sumber bacaan:
@@ -17,7 +15,7 @@ use App\Models\User;
  * https://medium.com/@dneey/bringing-laravel-model-observers-to-lumen-6916a16cb76b
  */
 
-trait CampaignMemberObserver {
+trait EmailObserver {
     protected static function boot ()
     {
         parent::boot();
@@ -26,15 +24,14 @@ trait CampaignMemberObserver {
          * Handle the post "deleting" event.
          * deleting : before a record is deleted or soft-deleted.
          *
-         * @param  \App\CampaignMember  $campaign_member
+         * @param  \App\User  $user
          * @return void
          */
-        static::deleting(function ($campaign_member) {
-            $campaign = Campaign::where('id', $campaign_member->campaign_id)->first();
-            $user = User::where('id', $campaign_member->user_id)->first();
-            $type = "members";
-            $emailJob = (new MailJob($user, $campaign, $type));
-            dispatch($emailJob);
+        static::deleting(function ($email) {
+            $campaign = (new Campaign())->getTable();
+            DB::table($campaign)->where('email_id', $email->id)->update([
+                'email_id' => null,
+            ]);
         });
     }
 }

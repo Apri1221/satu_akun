@@ -28,26 +28,28 @@
             class="border-t-2 hover:bg-gray-200"
           >
             <td class="px-3">
-              {{ row.name }}
+              {{ row.campaigns.title }}
             </td>
             <td class="px-3">
               {{ row.date | formatDate }}
             </td>
             <td class="font-bold text-xl">
               <span class="text-2xl">
-                <span v-if="row.status === 1">+</span>
-                <span v-else>-</span>
+                <span v-if="row.type === '1'">-</span>
+                <span v-else>+</span>
               </span>
 
-              <span>{{ row.price | formatRupiah }}</span>
+              <span>{{ row.nominal | formatRupiah }}</span>
             </td>
             <td class="px-4 py-3 text-xs">
               <div class="inline-flex">
                 <a
-                  class="px-2 py-1 text-white bg-green-400 hover:bg-green-600 focus:outline-none rounded-lg mr-2 shadow-md text-md"
-                  :href="`/campaign/${row.id}/checkout/${$store.state.user.id}`"
+                  class="px-3 py-1 text-white bg-green-400 hover:bg-green-600 focus:outline-none rounded-lg mr-2 shadow-md text-md"
+                  :href="`/campaign/${row.campaign_id}/checkout/${$store.state.user.id}`"
                 >
-                  <span class="inline-flex font-medium"> Konfirmasi </span>
+                  <span class="text-sm inline-flex text-white">
+                    Konfirmasi
+                  </span>
                 </a>
               </div>
             </td>
@@ -75,11 +77,11 @@ export default {
   },
   methods: {
     nameLength(row) {
-      return row.email.length
+      // return row.detail_campaign.email.length
     },
 
     indexChar(row) {
-      return row.email.charCodeAt(0) - 96
+      // return row.detail_campaign.email.charCodeAt(0) - 96
     },
 
     dateSort(a, b) {

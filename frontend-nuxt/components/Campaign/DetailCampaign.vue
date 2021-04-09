@@ -1,29 +1,7 @@
 <template>
   <div>
-    <div
-      class="min-w-screen min-h-screen flex -mt-20 justify-between items-center"
-      v-if="campaign.title === undefined"
-    >
-      <svg
-        class="animate-spin mx-auto place-items-center h-20 w-20 text-indigo-400 self-center"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          class="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="4"
-        ></circle>
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-      </svg>
+    <div v-if="campaign.title === undefined">
+      <Spinner />
     </div>
 
     <div
@@ -172,8 +150,8 @@
           >
             <div
               class="flex justify-start cursor-pointer text-gray-700 lg:bg-gray-100 bg-indigo-100 hover:bg-indigo-100 rounded-md px-2 py-2 xs:mb-2 items-center"
-              v-for="(member, index) in campaign.campaign_members"
-              :key="index"
+              v-for="member in campaign.campaign_members"
+              :key="member.id"
             >
               <span
                 v-if="member.is_pay === 0"
@@ -193,8 +171,7 @@
 
             <div
               class="flex justify-start cursor-pointer text-gray-700 bg-green-200 rounded-md px-2 py-2 xs:mb-2"
-              v-for="index in campaign.slot_capacity -
-              (campaign.total_members - 1)"
+              v-for="index in campaign.slot_capacity - campaign.slot_members"
               :key="index"
             >
               <div class="px-2 font-bold">Slot Kosong</div>
@@ -271,7 +248,7 @@
       </div>
     </div>
     <div
-      class="container px-4 mx-auto flex flex-wrap items-center justify-between bg-white w-full text-center pt-5 sm:hidden sticky bottom-0 min-w-screen"
+      class="container px-4 mx-auto flex flex-wrap items-center justify-between bg-white w-full text-center pt-0 pb-16 sm:hidden sticky bottom-0 min-w-screen"
     >
       <button
         v-if="!registered || isDisable || !this.$store.state.auth.token"
@@ -342,7 +319,7 @@
 </template>
 <script>
 import IconSocial from '../Profil/IconSocial'
-
+import Spinner from '@/components/Spinner.vue'
 
 export default {
   components: { IconSocial },
@@ -352,6 +329,7 @@ export default {
     return {
       hiddenDetail: true,
       loading: false,
+      errorMsg: '',
     }
   },
   methods: {
@@ -368,14 +346,19 @@ export default {
           this.loading = true
 
           this.$axios
-            .$get(`campaign/rsvp/${idCampaign}/${this.$store.state.user.id}`
-            )
+            .$get(`campaign/rsvp/${idCampaign}/${this.$store.state.user.id}`)
             .then((resp) => {
+              console.log(resp)
               this.$router.push(
                 `/campaign/${idCampaign}/checkout/${this.$store.state.user.id}`
               )
             })
             .catch((errors) => {
+              this.loading = false
+              const { status, data } = errors.response
+              if (status === 422) {
+                alert('Sudah penuh')
+              }
               console.dir(errors)
             })
         }
@@ -393,13 +376,13 @@ export default {
       if (this.$store.state.auth.token) {
         return (
           this.campaign.id_host === this.$store.state.user.id ||
-          this.$store.state.user.role === 'a'
-          // this.statusDisable
+          this.$store.state.user.role === 'a' ||
+          this.campaign.slot_members === this.campaign.slot_capacity
         )
       } else {
         return false
       }
-    }
+    },
   },
 }
 </script>

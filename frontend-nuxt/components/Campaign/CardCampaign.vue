@@ -18,7 +18,7 @@
         <div
           class="bg-indigo-500 absolute bottom-0 right-0 p-3 rounded-tl-md xs:py-1"
         >
-          <p class="font-bold text-white text-md sm:text-sm xs:text-xs">
+          <p class="font-bold text-white text-md xs:text-sm">
             {{ campaign.calculated_price | formatRupiah
             }}<span class="font-normal">/orang</span>
           </p>
@@ -73,7 +73,7 @@
               <div class="col-end-7 col-span-2">
                 <span class="text-sm text-gray-700">
                   {{
-                    campaign.total_members - 1 + '/' + campaign.slot_capacity
+                    campaign.slot_members + '/' + campaign.slot_capacity
                   }}</span
                 >
               </div>
@@ -113,7 +113,6 @@
   </div>
 </template>
 <script>
-
 export default {
   name: 'CardCampaign',
   props: ['title', 'campaign'],
@@ -127,11 +126,10 @@ export default {
       return this.campaign.host_name !== null
         ? this.campaign.host_name.name
         : ''
-    }
+    },
   },
   methods: {},
-  mounted() {
-  },
+  mounted() {},
 }
 </script>
 <style>

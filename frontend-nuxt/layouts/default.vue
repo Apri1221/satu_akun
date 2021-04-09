@@ -1,7 +1,7 @@
 <template>
   <div>
-    <Navbar />
-    <div class="py-12">
+    <component :is="navbar"></component>
+    <div :class="[navbar === 'Navbar' ? 'my-12' : 'mt-12 mb-24']">
       <div v-show="android || iphone" class="container py-5 px-3 flex flex-col mx-auto items-center justify-center content install-prompt">
         <p class="mb-4">Install aplikasi Patungin di ponsel kamu</p>
         
@@ -59,21 +59,29 @@
           </button>
         </div>
       </div>
-      <Nuxt keep-alive />
+      <Nuxt keep-alive :keep-alive-props="{ exclude: ['category'] }" />
     </div>
-    <Footer />
+    <Footer v-if="navbar === 'Navbar'" />
   </div>
 </template>
 
 <script>
+import Navbar from '@/components/Navbar'
+import NavbarBottom from '@/components/NavbarBottom'
+
 export default {
     data() {
         return {
+            navbar: "Navbar",
             iphone: false,
             android: false,
             deferredPrompt: null,
             beingInstalled: false,
         }
+    },
+    components: {
+        Navbar,
+        NavbarBottom
     },
     watch: {
         $route(to, from) {
@@ -93,7 +101,7 @@ export default {
                 this.android = true;
             }
             if (navigator.userAgent.toLowerCase().indexOf("iphone") > -1){
-                this.iphone = true;
+                // this.iphone = true;
             }
             const account = /account/i
             if (account.test(this.$route.path)) {
@@ -106,6 +114,11 @@ export default {
                 this.deferredPrompt = event;
                 return false;
             });
+        } else {
+            // this.navbar = "NavbarBottom"
+        }
+        if (this.android === true) {
+            this.navbar = "NavbarBottom"
         }
     },
     methods: {
